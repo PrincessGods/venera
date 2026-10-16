@@ -187,43 +187,42 @@ class VomicMHComicSource extends ComicSource {
   }
 
   // 解析章节名 -> { group, num }
+  // group 用数字做组优先级: 话=0, 卷=1, 其他=2
   _parseChapterName(name) {
     let t = (name || '').trim();
     let m = t.match(/(\d+(?:\.\d+)?)\s*话/);
-    if (m) return { group: '话', num: parseFloat(m[1]) };
+    if (m) return { group: 0, num: parseFloat(m[1]) };
     m = t.match(/(\d+(?:\.\d+)?)\s*卷/);
-    if (m) return { group: '卷', num: parseFloat(m[1]) };
-    return { group: '其他', num: null };
+    if (m) return { group: 1, num: parseFloat(m[1]) };
+    return { group: 2, num: null };
   }
 
-  // [{id,name}] -> Map<组名, Map<id, name>> (先分组, 组内按序号排序)
+  // [{id,name}] -> 单层 Map<id, name>
+  // 排序: 先按组别(话->卷->其他), 组内再按序号(正序/倒序)
   _buildChapterGroups(rawChapters) {
-    let groups = { 话: [], 卷: [], 其他: [] };
-    for (let ch of rawChapters) {
-      let info = this._parseChapterName(ch.name);
-      groups[info.group].push({ id: ch.id, name: ch.name, num: info.num });
-    }
     let desc = this.chapterOrder === 'desc';
-    let sortFn = (a, b) => {
+
+    let items = rawChapters.map((ch) => {
+      let info = this._parseChapterName(ch.name);
+      return {
+        id: `${ch.id}`,
+        name: ch.name,
+        group: info.group,
+        num: info.num,
+      };
+    });
+
+    items.sort((a, b) => {
+      if (a.group !== b.group) return a.group - b.group;
       if (a.num == null && b.num == null) return 0;
       if (a.num == null) return 1;
       if (b.num == null) return -1;
       return desc ? b.num - a.num : a.num - b.num;
-    };
-    let result = new Map();
-    for (let g of ['话', '卷', '其他']) {
-      if (groups[g].length === 0) continue;
-      groups[g].sort(sortFn);
-      let inner = new Map();
-      for (let ch of groups[g]) inner.set(ch.id, ch.name);
-      result.set(g, inner);
-    }
-    if (result.size === 0) {
-      let inner = new Map();
-      for (let ch of rawChapters) inner.set(ch.id, ch.name);
-      result.set('章节列表', inner);
-    }
-    return result;
+    });
+
+    let map = new Map();
+    for (let it of items) map.set(it.id, it.name);
+    return map;
   }
 
   // ============ 探索页 ============
