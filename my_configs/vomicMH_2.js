@@ -310,17 +310,43 @@ class VomicMHComicSource extends ComicSource {
     optionList: [],
   };
 
+  // 从搜索输入中提取 car_id (支持 detail/chapter 链接)
+  _extractCarId(input) {
+    let s = (input || '').trim();
+    let m = s.match(/\/detail\/(\d+)/);
+    if (m) return m[1];
+    m = s.match(/\/chapter\/(\d+)/);
+    if (m) return m[1];
+    return null;
+  }
+
   // ============ 搜索 ============
   search = {
     load: async (keyword, options, page) => {
       this._ensureLogged();
+
+      // 直达: 输入为 detail/chapter 链接时, 直接返回该作品
+      let directId = this._extractCarId(keyword);
+      if (directId) {
+        return {
+          comics: [
+            new Comic({
+              id: directId,
+              title: `作品 #${directId}`,
+              cover: '',
+            }),
+          ],
+          maxPage: 1,
+        };
+      }
+
+      // 常规关键词搜索
       let res = await Network.get(
         `${VomicMHComicSource.SITE}/so/key/${encodeURIComponent(keyword)}/${page}`,
         this.baseHeaders,
       );
       this._checkStatus(res);
       return this._parseListPage(res.body);
-      // (接上: search 块结尾)
     },
     optionList: [],
   };
