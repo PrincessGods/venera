@@ -97,13 +97,10 @@ class VomicMHComicSource extends ComicSource {
 
   _applyQuality(url) {
     if (!url) return url;
-    console.log('imageQuality = ' + this.imageQuality);
     if (this.imageQuality !== 'origin') return url;
     let newUrl = url
       .replace(/thumbnail\/\d+x/, 'thumbnail/1000x')
       .replace(/quality\/\d+/, 'quality/100');
-    // add test log
-    console.log('quality url: ' + newUrl);
     return newUrl;
   }
 
