@@ -87,16 +87,23 @@ class VomicMHComicSource extends ComicSource {
   }
 
   get imageQuality() {
-    let v = this.loadData('imageQuality');
+    let v = null;
+    try {
+      v = this.loadSetting ? this.loadSetting('imageQuality') : null;
+    } catch (e) {}
+    if (v == null) v = this.loadData('imageQuality');
     return v === 'origin' ? 'origin' : 'default';
   }
 
   _applyQuality(url) {
     if (!url) return url;
+    console.log('imageQuality = ' + this.imageQuality);
     if (this.imageQuality !== 'origin') return url;
-    return url
+    const newUrl = url
       .replace(/thumbnail\/\d+x/, 'thumbnail/1000x')
       .replace(/quality\/\d+/, 'quality/100');
+    console.log('quality url: ' + newUrl);
+    return newUrl;
   }
 
   init() {}
