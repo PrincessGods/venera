@@ -86,6 +86,19 @@ class VomicMHComicSource extends ComicSource {
       .replace(/&#39;/g, "'");
   }
 
+  get imageQuality() {
+    let v = this.loadData('imageQuality');
+    return v === 'origin' ? 'origin' : 'default';
+  }
+
+  _applyQuality(url) {
+    if (!url) return url;
+    if (this.imageQuality !== 'origin') return url;
+    return url
+      .replace(/thumbnail\/\d+x/, 'thumbnail/1000x')
+      .replace(/quality\/\d+/, 'quality/100');
+  }
+
   init() {}
 
   // ============ 账号 / 登录鉴权 ============
@@ -468,7 +481,7 @@ class VomicMHComicSource extends ComicSource {
         for (let img of imgEls) {
           // 关键: 解码 &amp;, 否则签名参数被破坏导致 403
           let src = this._decodeEntities(img.attributes['src'] || '');
-          if (src) images.push(src);
+          if (src) images.push(this._applyQuality(src));
         }
         if (images.length === 0) {
           throw '未获取到图片，可能需要重新登录';
@@ -522,6 +535,15 @@ class VomicMHComicSource extends ComicSource {
         { value: 'desc', text: '倒序（N→1）' },
       ],
       default: 'asc',
+    },
+    imageQuality: {
+      title: '画质',
+      type: 'select',
+      options: [
+        { value: 'default', text: '默认（800x / 75）' },
+        { value: 'origin', text: '原画（1000x / 100）' },
+      ],
+      default: 'default',
     },
   };
 }
