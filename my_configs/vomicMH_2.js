@@ -99,7 +99,7 @@ class VomicMHComicSource extends ComicSource {
     if (!url) return url;
     if (this.imageQuality !== 'origin') return url;
     let newUrl = url
-      .replace(/thumbnail\/\d+x/, 'thumbnail/1000x')
+      .replace(/thumbnail\/\d+x/, 'thumbnail/2000x')
       .replace(/quality\/\d+/, 'quality/100');
     return newUrl;
   }
@@ -545,8 +545,8 @@ class VomicMHComicSource extends ComicSource {
       title: '画质',
       type: 'select',
       options: [
-        { value: 'default', text: '默认（800x / 75）' },
-        { value: 'origin', text: '原画（1000x / 100）' },
+        { value: 'default', text: '省流（800x / 75）' },
+        { value: 'origin', text: '原画（2000x / 100）' },
       ],
       default: 'origin',
     },
