@@ -543,7 +543,7 @@ class VomicMHComicSource extends ComicSource {
         { value: 'default', text: '默认（800x / 75）' },
         { value: 'origin', text: '原画（1000x / 100）' },
       ],
-      default: 'default',
+      default: 'origin',
     },
   };
 }
